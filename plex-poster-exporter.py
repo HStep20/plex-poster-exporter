@@ -61,7 +61,9 @@ class Plex():
         if not self.servers:
             print('\033[91mERROR:\033[0m', 'no available servers.')
             sys.exit()
-        if self.server == None or self.servers not in [ _.name for _ in self.servers ]:
+        if self.server is None or self.servers not in [
+            _.name for _ in self.servers
+        ]:
             self.server = plexapi.utils.choose('Select Server', self.servers, 'name').connect()
         else:
             self.server = self.server(self.server)
@@ -73,7 +75,9 @@ class Plex():
         if not self.libraries:
             print('\033[91mERROR:\033[0m', 'no available libraries.')
             sys.exit()
-        if self.library == None or self.library not in [ _.title for _ in self.libraries ]:
+        if self.library is None or self.library not in [
+            _.title for _ in self.libraries
+        ]:
             self.library = plexapi.utils.choose('Select Library', self.libraries, 'title')
         else:
             self.library = self.server.library.section(self.library)
@@ -101,14 +105,13 @@ class Plex():
             if self.verbose:
                 print('\033[93mSKIPPED:\033[0m', path+'/'+filename)
             self.skipped += 1
+        elif plexapi.utils.download(self.server._baseurl+url, self.account._token, filename=filename, savepath=path):
+            if self.verbose:
+                print('\033[92mDOWNLOADED:\033[0m', path+'/'+filename)
+            self.downloaded += 1
         else:
-            if plexapi.utils.download(self.server._baseurl+url, self.account._token, filename=filename, savepath=path):
-                if self.verbose:
-                    print('\033[92mDOWNLOADED:\033[0m', path+'/'+filename)
-                self.downloaded += 1
-            else:
-                print('\033[91mDOWNLOAD FAILED:\033[0m', path+'/'+filename)
-                sys.exit()
+            print('\033[91mDOWNLOAD FAILED:\033[0m', path+'/'+filename)
+            sys.exit()
 
 # main
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))
@@ -136,34 +139,55 @@ def main(ctx, username: str, password: str, server: str, library: str, assets: s
             print('\n\033[94mITEM:\033[0m', item.title)
 
         path = plex.getPath(item)
-        if path == None:
+        if path is None:
             print('\033[91mERROR:\033[0m', 'failed to extract the path.')
             sys.exit()
 
-        if (assets == 'all' or assets == 'posters') and hasattr(item, 'thumb') and item.thumb != None:
+        if (
+            assets in {'all', 'posters'}
+            and hasattr(item, 'thumb')
+            and item.thumb != None
+        ):
             plex.download(item.thumb, 'poster.jpg', path)
-        if (assets == 'all' or assets == 'backgrounds') and hasattr(item, 'art') and item.art != None:
+        if (
+            assets in {'all', 'backgrounds'}
+            and hasattr(item, 'art')
+            and item.art != None
+        ):
             plex.download(item.art, 'background.jpg', path)
-        if (assets == 'all' or assets == 'banners') and hasattr(item, 'banner') and item.banner != None:
+        if (
+            assets in {'all', 'banners'}
+            and hasattr(item, 'banner')
+            and item.banner != None
+        ):
             plex.download(item.banner, 'banner.jpg', path)
-        if (assets == 'all' or assets == 'themes') and hasattr(item, 'theme') and item.theme != None:
+        if (
+            assets in {'all', 'themes'}
+            and hasattr(item, 'theme')
+            and item.theme != None
+        ):
             plex.download(item.theme, 'theme.mp3', path)
 
         if plex.library.type == 'show':
             for season in item.seasons():
                 path = plex.getPath(season, True)
-                if path == None:
+                if path is None:
                     print('\033[91mERROR:\033[0m', 'failed to extract the path.')
                     sys.exit()
 
-                if (assets == 'all' or assets == 'posters') and hasattr(season, 'thumb') and season.thumb != None and season.title != None:
+                if (
+                    assets in ['all', 'posters']
+                    and hasattr(season, 'thumb')
+                    and season.thumb != None
+                    and season.title != None
+                ):
                     plex.download(season.thumb, (season.title if season.title != 'Specials' else 'season-specials-poster')+'.jpg', path)
-                # TODO: Add backgrounds for seasons?
-                # if (assets == 'all' or assets == 'backgrounds') and hasattr(season, 'art') and season.art != None and season.title != None:
-                #     plex.download(season.art, (season.title+'-background' if season.title != 'Specials' else 'season-specials-background')+'.jpg', path)
-                # TODO: Add banners for seasons?
-                # if (assets == 'all' or assets == 'banners') and hasattr(season, 'banner') and season.banner != None and season.title != None:
-                #     plex.download(season.banner, (season.title+'-banner' if season.title != 'Specials' else 'season-specials-banner')+'.jpg', path)
+                            # TODO: Add backgrounds for seasons?
+                            # if (assets == 'all' or assets == 'backgrounds') and hasattr(season, 'art') and season.art != None and season.title != None:
+                            #     plex.download(season.art, (season.title+'-background' if season.title != 'Specials' else 'season-specials-background')+'.jpg', path)
+                            # TODO: Add banners for seasons?
+                            # if (assets == 'all' or assets == 'banners') and hasattr(season, 'banner') and season.banner != None and season.title != None:
+                            #     plex.download(season.banner, (season.title+'-banner' if season.title != 'Specials' else 'season-specials-banner')+'.jpg', path)
 
     if verbose:
         print('\n\033[94mTOTAL SKIPPED:\033[0m', str(plex.skipped))
