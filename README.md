@@ -1,4 +1,6 @@
 # Plex Poster Exporter
+This is an updated version of KrunchMuffin's script. The only change is that it uses the Plex Token to log into the server, instead of needing a username and password entered each time the script is run. On top of that, it properly selects the server/libraries using Click in order to be run through a command. This allows for fullly hands-off automation if you prefer to set this up to run weekly via cron or another scheduling tool.
+
 Export posters, backgrounds, banners, and theme songs from Plex.
 
 ## Installation
